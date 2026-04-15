@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <link rel="stylesheet" href="{{ config['PREFIX'] }}{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">    
+        <div class="top-nav">
+            <a href="javascript:history.back()" class="back-link">← Back</a>
+            <a href="{{ config['PREFIX'] }}{{ url_for('index') }}" class="logo-nav">PharmAllele</a>
+        </div>
+        <header><h1>Search Results</h1></header>
+        <p>Drugs: <span class="highlight">{{ drug if drug else 'Any' }}</span> | Variants: <span class="highlight">{{ variant if variant else 'Any' }}</span></p>
+        
+        <table id="table-output">
+            <thead><tr><th>Drug</th><th>Variant</th><th>Phenotype</th><th>Illness</th><th>Evidence Level</th><th>Scientific Articles</th></tr></thead>
+            <tbody>
+                {% for res in results %}
+                <tr>
+                    <td>{{ res.drugs_drug_name }}</td>
+                    <td><span class="variant">{{ res.variants_variant_name }}</span></td>
+                    <td>{{ res.phenotype_category_phenotype_category }}</td>
+                    <td>{{ res.illness_illness_name }}</td>
+                    <td>
+                        {% set desc = glosario.get(res.evidence_category_evidence_category, "Sin descripción disponible") %}
+    
+                        <span class="badge" title="{{ desc }}" style="cursor: help;">
+                            {{ res.evidence_category_evidence_category }}
+                            {% if res.evidence_level_evidence_level %}
+                                ({{ res.evidence_level_evidence_level }})
+                            {% endif %}
+                            <small>ℹ️</small>
+                        </span>
+                    </td>
+                    <td>
+                      <a href="{{ config['PREFIX'] }}{{ url_for('evidencia_articulos', id_annotation=res.id_annotation) }}" class="badge"> PMID Evidence</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>$(document).ready(function(){ $('#table-output').DataTable(); });</script>
+</body>
+</html>

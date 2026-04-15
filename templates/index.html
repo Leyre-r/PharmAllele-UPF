@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmAllele - Pharmagenetic</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ config['PREFIX'] }}{{ url_for('static', filename='img/logo_pharmallele_blanco.png') }}">
+    <link rel="stylesheet" href="{{ config['PREFIX'] }}{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class = "home-page">
+    <div class="container">
+        <div style="margin-bottom: 1rem;">
+            <a href="javascript:history.back()" style="text-decoration: none; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;">
+                ← Back to previous page
+            </a>
+        </div>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+            <div class>
+                <h1>PharmAllele</h1>
+                <p class="subtitle">Pharmacogenetic Information Platform</p>
+            </div>
+
+            <div class="auth-buttons">
+                {% if current_user.is_authenticated %}
+                    <span style="font-size: 0.875rem; color: var(--text-secondary); margin-right: 15px;">
+                        Hi, <strong>{{ current_user.email }}</strong>
+                    </span>
+                    <a href="{{ config['PREFIX'] }}{{ url_for('logout') }}" class="btn" style="background-color: #ef4444;">Logout</a>
+                {% else %}
+                    <a href="{{ config['PREFIX'] }}{{ url_for('login') }}" class="btn">Login</a>
+                    <a href="{{ config['PREFIX'] }}{{ url_for('register') }}" class="btn" style="background-color: var(--text-secondary); margin-left: 5px;">Register</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="card">
+            <h2 class="card-title">Search interactions</h2>
+            
+            {% if current_user.is_authenticated %}
+                <form id="main-search-form" class="form-container" action="{{ config['PREFIX'] }}{{ url_for('search') }}" method="GET">
+                    <p class="form-info">Search by drug name, variant or both at the same time.</p>
+                    
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label for="drug">Drug <span class="optional">(optional)</span></label>
+                            <input type="text" id="drug" name="drug" placeholder="ej. Warfarina, Clopidogrel">
+                        </div>
+                        <div class="form-group">
+                            <label for="variant">Variant <span class="optional">(optional)</span></label>
+                            <input type="text" id="variant" name="variant" placeholder="ej. rs1057910, rs4244285">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-full" id="search-btn">
+                        <svg class="icon-search" style="width:1rem; height:1rem;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        </svg>
+                        <span>Search</span>
+                    </button>
+                </form>
+                <a href="{{ config['PREFIX'] }}{{ url_for('listar_drugs') }}" class="quick-link" style="display: inline-block; margin-top: 1.5rem; color: #4f46e5; text-decoration: none; font-weight: 500;">
+                    📋 See all drugs
+                </a>
+                <a href="{{ config['PREFIX'] }}{{ url_for('listar_variants') }}" class="quick-link" style="display: inline-block; margin-top: 1.5rem; color: #4f46e5; text-decoration: none; font-weight: 500;">
+                    📋 See all variants
+                </a>
+            {% else %}
+                <div style="text-align: center; padding: 2rem; background: var(--background-secondary); border-radius: var(--radius);">
+                    <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1rem;">
+                        🔒 Please log in to perform searches and see results.
+                    </p>
+                    <a href="{{ config['PREFIX'] }}{{ url_for('login') }}" class="btn">Log In Now</a>
+                </div>
+            {% endif %}
+            
+            
+        </div>
+
+        <div id="myDiv"></div>
+
+        <div class="table-container" style="display: none;">
+            <table id="table-output">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p class="footer-title">PharmAllele</p>
+            <p><a href="mailto:pharmallele@gmail.com">pharmallele@gmail.com</a></p>
+            <p>© 2026 PharmAllele. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
+    <script src="{{ config['PREFIX'] }}{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        const drugInput = document.getElementById('drug');
+        const variantInput = document.getElementById('variant');
+        const searchBtn = document.getElementById('search-btn');
+
+        if (searchBtn) {
+            function updateButtonState() {
+                const drugValue = drugInput.value.trim();
+                const variantValue = variantInput.value.trim();
+                searchBtn.disabled = !drugValue && !variantValue;
+            }
+
+            drugInput.addEventListener('input', updateButtonState);
+            variantInput.addEventListener('input', updateButtonState);
+            updateButtonState();
+        }
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const btn = this.querySelector('button[type="submit"]');
+                const span = btn.querySelector('span');
+                if (btn) {
+                    btn.disabled = true;
+                    if (span) span.textContent = 'Searching...';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

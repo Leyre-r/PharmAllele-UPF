@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evidence Definition</title>
+    <link rel="stylesheet" href="{{ config['PREFIX'] }}{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container"></div>
+        <div class="top-nav">
+            <a href="javascript:history.back()" class="back-link">← Back</a>
+            <a href="{{ config['PREFIX'] }}{{ url_for('index') }}" class="logo-nav">PharmAllele</a>
+        </div>
+    
+        <a href="javascript:history.back()" class="btn">← Go Back</a>
+        <div class="info-card" style="margin-top: 2rem;">
+            <h1>Level: {{ evidencia.evidence_category }}</h1>
+            <p><strong>Description:</strong></p>
+            <p>{{ evidencia.evidence_description }}</p>
+        </div>
+    </div>
+</body>
+</html>

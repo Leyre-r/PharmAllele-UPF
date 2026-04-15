@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Details: {{ variante.variant_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ config['PREFIX'] }}{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <a href="javascript:history.back()" class="back-link">← Back</a>
+            <a href="{{ config['PREFIX'] }}{{ url_for('index') }}" class="logo-nav">PharmAllele</a>
+        </div>
+        <header style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="margin: 0;">Variant Identifier: {{ variante.variant_name }}</h1>
+            </div>
+            <div style="text-align: right; border-left: 3px solid var(--primary); padding-left: 20px;">
+                <p style="color: var(--text-muted); margin-bottom: -5px;">Associated Gene</p>
+                <h2 style="font-size: 2.2rem; margin: 0; color: var(--text-primary);">{{ variante.gene_gene_name }}</h2>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="info-box">
+                <h2>External Databases</h2>
+                <p>Access the National Center for Biotechnology Information for specific variant data:</p><br>
+                <a href="https://www.ncbi.nlm.nih.gov/snp/{{ variante.variant_name }}" 
+                target="_blank" class="badge" style="background-color: #2c3e50;">
+                View on dbSNP 🔗
+                </a>
+            </div>
+
+            <h2>Associated Drugs</h2>
+            <p>This genetic variant influences the response of the following drugs:</p>
+            
+            <table id="table-drugs">
+                <thead>
+                    <tr>
+                        <th>Drug Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in farmacos %}
+                    <tr>
+                        <td><strong>{{ f.drug_name }}</strong></td>
+                        <td>
+                            <a href="{{ config['PREFIX'] }}{{ url_for('mostrar_detalles_drug', nombre_farmaco=f.drug_name) }}" class="badge">Go to Drug Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){ 
+            $('#table-drugs').DataTable({
+                "pageLength": 10,
+                "language": { "search": "Filter results:" }
+            }); 
+        });
+    </script>
+</body>
+</html>

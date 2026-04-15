@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evidence Articles - PMID</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+
+    <link rel="stylesheet" href="{{ config['PREFIX'] }}{{ url_for('static', filename='styles.css') }}">
+    
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <a href="javascript:history.back()" class="back-link">← Back</a>
+            <a href="{{ config['PREFIX'] }}{{ url_for('index') }}" class="logo-nav">PharmAllele</a>
+        </div>
+        <header>
+            <h1>Scientific Evidence (PMID)</h1>
+        </header>
+
+        {% if info %}
+            <p>Showing articles for: 
+               <span class="highlight">{{ info.drugs_drug_name }}</span> - 
+               <span class="variant">{{ info.variants_variant_name }}</span>
+            </p>
+        {% endif %}
+
+        <p id="searchCount" class="subtitle">Showing {{ articulos|length }} evidence articles</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+            <input type="text" id="cardSearch" placeholder="🔍 Search ..." style="flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid var(--border);">
+            
+            <button onclick="exportCardsToCSV()" class="btn" style="background-color: #10b981; white-space: nowrap; display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 1.1rem;">📥</span> Export CSV
+            </button>
+        </div>
+        
+        <div class="cards-container">
+            {% for art in articulos %}
+            <div class="pdb-card">
+                <div class="card-header">
+                    <span class="evidence-id">Evidence ID: {{ art.id_evidence }}</span>
+                    {% if art.PMID %}
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/{{ art.PMID }}/" target="_blank" class="pmid-link">
+                        PMID: {{ art.PMID }}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    <div class="card-row">
+                        <span class="label">Drug:</span>
+                        <span class="value drug-tag">{{ info.drugs_drug_name }}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="label">Variant:</span>
+                        <span class="value variant-tag">{{ info.variants_variant_name }}</span>
+                    </div>
+                    <div class="card-row summary-section">
+                        <span class="label">Summary / Abstract:</span>
+                        <p class="summary-text">{{ art.summary_text }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not articulos %}
+            <div class="info-box" style="border-left-color: #ef4444;">
+                <p>No scientific articles found for this annotation (ID: {{ id_annot }}).</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#cardSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                var visibleCards = 0;
+
+                $(".cards-container .pdb-card").each(function() {
+                    var isVisible = $(this).text().toLowerCase().indexOf(value) > -1;
+                    $(this).toggle(isVisible);
+                    
+                    if(isVisible) visibleCards++;
+                });
+
+                $("#searchCount").text("Showing " + visibleCards + " evidence articles");
+            });
+        });
+
+        function exportCardsToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Evidence ID,Drug,Variant,Summary,PMID\n";
+
+            const visibleCards = document.querySelectorAll(".pdb-card:not([style*='display: none'])");
+
+            if (visibleCards.length === 0) {
+                alert("No hay datos visibles para exportar");
+                return;
+            }
+
+            visibleCards.forEach(card => {
+                const id = card.querySelector(".evidence-id").innerText.replace("Evidence ID: ", "").trim();
+                const drug = card.querySelector(".drug-tag").innerText.trim();
+                const variant = card.querySelector(".variant-tag").innerText.trim();
+                const summary = card.querySelector(".summary-text").innerText.replace(/[/,]/g, ";").replace(/\n/g, " ").trim();
+                const pmid = card.querySelector(".pmid-link") ? card.querySelector(".pmid-link").innerText.replace("PMID: ", "").trim() : "N/A";
+
+                csvContent += `${id},${drug},${variant},"${summary}",${pmid}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "pharmallele_evidence_export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+</script>
+    </script>
+</body>
+</html>
